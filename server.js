@@ -18,7 +18,12 @@ serve(async (req) => {
     ) {
       return new Response("前の単語に続いていません。", { status: 400 });
     }
-
+    
+    //終了時，最初の単語で初期化
+    if ( nextWord.charAt(nextWord.length - 1) === 'ん' ) {
+      return new Response("しりとり");
+    }
+    
     previousWord = nextWord;
     return new Response(previousWord);
 
