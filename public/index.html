@@ -46,7 +46,6 @@
     //終了時，最初の単語で初期化
       if ( nextWord.charAt(nextWord.length - 1) === 'ん' ) {
         alert(await "終了！");
-        previousWord = "しりとり";
       }
       const para = document.querySelector("#previousWord");
       para.innerText = `前の単語：${previousWord}`;
