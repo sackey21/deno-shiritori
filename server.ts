@@ -17,10 +17,6 @@ serve(async (req) => {
     const requestJson = await req.json();
     const nextWord = requestJson.nextWord;
     
-    if(!(words instanceof Array)){
-      return new Response("単語のlogが残りません", { status: 400 });
-    }
-
     if(!HiraganaCheck(nextWord)) {
       return new Response("ひらがなで入力してください", { status: 400 });
     }
@@ -30,10 +26,12 @@ serve(async (req) => {
       return new Response("前の単語に続いていません", { status: 400 });
     }
     
-    if (
-      nextWord.length < 0 
-    ) {
+    if (nextWord.length < 0 ) {
       return new Response("入力してください", { status: 400 });
+    }
+
+    if(words.includes(nextWord)){
+      return new Response("同じ単語は使えません", { status: 400 });
     }
 
     //終了時，最初の単語で初期化
