@@ -14,47 +14,58 @@
   <p id="previousWord"></p>
   <input id="nextWordInput" type="text" />
   <button id="nextWordSendButton">送信</button>
-
+  <p id="wordsLog"></p>
   <script type="module">
 
     window.onload = async (event) => {
-
       const response = await fetch("/shiritori");
-      const previousWord = await response.text();
+      const ar_response = await response.text();
+      const ar_words = ar_response.replace(/\[|\]|"/g, '').split(',');
+      const previousWord = ar_words[ar_words.length - 1];
       const para = document.querySelector("#previousWord");
       para.innerText = `前の単語：${previousWord}`;
-
+      const wordsLog = document.querySelector("#wordsLog");
+      wordsLog.innerText = `単語履歴\n${previousWord}`
     };
 
     document.querySelector("#nextWordSendButton").onclick = async (event) => {
-
       const nextWord = document.querySelector("#nextWordInput").value;
       const response = await fetch("/shiritori", {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nextWord })
+        
       });
 
-      if (response.status / 100 !== 2) {
+      if (Math.trunc(response.status / 100) !== 2) {
         alert(await response.text());
         clearInput();
         return;
       }
-
-      let previousWord = await response.text();
-
-    //終了時，最初の単語で初期化
-      if ( nextWord.charAt(nextWord.length - 1) === 'ん' ) {
-        alert(await "終了！");
+      if (response.status == 220){ 
+        alert("終了！");
       }
+
+      const ar_response = await response.text();
+      const ar_words = ar_response.replace(/\[|\]|"/g, '').split(',');
+      let previousWord = ar_words[ar_words.length - 1];
+    
       const para = document.querySelector("#previousWord");
       para.innerText = `前の単語：${previousWord}`;
+      
+      const wordsLog = document.querySelector("#wordsLog");
+      let words = ar_response.replace(/\[|\]|"/g, '').replace(/,/g,'->')
+
+      wordsLog.innerText = `単語履歴\n${words}`;
       clearInput();
 
       function clearInput() {
             var textForm = document.getElementById("nextWordInput");
             textForm.value = '';
           }
+      
+      
     };
 
   </script>
