@@ -13,21 +13,21 @@
   <h1>しりとり</h1>
   <p id="previousWord"></p>
   <input id="nextWordInput" type="text" />
-  <button id="nextWordSendButton">送信</button>
+  <button id="nextWordSendButton" onclick="">送信</button>
   <p id="wordsLog"></p>
   <script type="module">
-
     window.onload = async (event) => {
+      document.getElementById('nextWordInput').focus();
       const response = await fetch("/shiritori");
       const ar_response = await response.text();
       const ar_words = ar_response.replace(/\[|\]|"/g, '').split(',');
       const previousWord = ar_words[ar_words.length - 1];
       const para = document.querySelector("#previousWord");
-      para.innerText = `前の単語：${previousWord}`;
+      para.innerText = `スタート：${previousWord}`;
       const wordsLog = document.querySelector("#wordsLog");
       wordsLog.innerText = `単語履歴\n${previousWord}`
     };
-
+    
     document.querySelector("#nextWordSendButton").onclick = async (event) => {
       const nextWord = document.querySelector("#nextWordInput").value;
       const response = await fetch("/shiritori", {
@@ -38,15 +38,19 @@
         
       });
 
+      document.getElementById('nextWordInput').focus();
+
       if (Math.trunc(response.status / 100) !== 2) {
         alert(await response.text());
         clearInput();
         return;
       }
       if (response.status == 220){ 
-        alert("終了！");
+        alert("まけ");
       }
-
+      if (response.status == 240){ 
+        alert("勝ち！");
+      }
       const ar_response = await response.text();
       const ar_words = ar_response.replace(/\[|\]|"/g, '').split(',');
       let previousWord = ar_words[ar_words.length - 1];
@@ -55,19 +59,21 @@
       para.innerText = `前の単語：${previousWord}`;
       
       const wordsLog = document.querySelector("#wordsLog");
-      let words = ar_response.replace(/\[|\]|"/g, '').replace(/,/g,'->')
+      let words = ar_response.replace(/\[|\]|"/g, '').replace(/,/g,'->');
 
       wordsLog.innerText = `単語履歴\n${words}`;
       clearInput();
 
       function clearInput() {
-            var textForm = document.getElementById("nextWordInput");
-            textForm.value = '';
-          }
-      
+        var textForm = document.getElementById("nextWordInput");
+        textForm.value = '';
+      }
+    
       
     };
 
+  
+    
   </script>
 </body>
 
