@@ -1,8 +1,8 @@
-import { serve } from "./public/dev_deps.ts";
-import { serveDir } from "./public/dev_deps.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve, serveDir } from "./public/dev_deps.ts";
 import {cpu} from "./public/cpu.ts";
 import {HiraganaCheck, judgeWord} from "./public/word_check.ts";
+
+
 let words = new Array<string>();
 let previousWord = randomStart();
 console.log("Listening on http://localhost:8000");

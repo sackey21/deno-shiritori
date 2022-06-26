@@ -6,6 +6,7 @@ import { HiraganaCheck, judgeWord } from "./word_check.ts";
 export async function cpu(previousWord:string, words : Array<string>){
   //previousWordは伸ばし棒除外済み，wordsは表示そのまま．
   //previousWord->前文字判定用，wordsは重複確認用．
+
     const file = await Deno.open("./public/words.csv", {read: true});
     let nextWord = "";
     //被り制限
