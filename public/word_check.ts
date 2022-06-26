@@ -1,4 +1,5 @@
 //ひらがなか確認(途中ののばし棒は許容)
+//伸ばし棒が続くとはじかれる？
 export function HiraganaCheck(str: string) : boolean {
     let ch: number;
     for(let i = 0; i < str.length; i++){

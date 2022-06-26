@@ -57,7 +57,6 @@ serve(async (req) => {
     await cpu(nextWord,words).then((cpu_word) => {
       words.push(cpu_word);
       if (cpu_word.charAt(cpu_word.length - 1) === 'ん' || cpu_word == "") {
-        reset();
         lose = true;
         //return返ってくれないので強引に返すんですけど，原因究明しないといけない
       }
@@ -66,7 +65,10 @@ serve(async (req) => {
       console.error(e);
       return new Response("処理に異常が発生したのでスタートに戻ります", { status: 400 })
     });
-    if(lose)return new Response(JSON.stringify(words), { status: 240 });
+    if(lose){
+      reset();
+      return new Response(JSON.stringify(words), { status: 240 });
+    }
     else return new Response(JSON.stringify(words));
   }
 
