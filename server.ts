@@ -2,7 +2,7 @@ import { serve } from "./public/dev_deps.ts";
 import { serveDir } from "./public/dev_deps.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import {cpu} from "./public/cpu.ts";
-import {HiraganaCheck} from "./public/error_check.ts";
+import {HiraganaCheck, judgeWord} from "./public/word_check.ts";
 let words = new Array<string>();
 let previousWord = randomStart();
 console.log("Listening on http://localhost:8000");
@@ -18,19 +18,20 @@ serve(async (req) => {
   if (req.method === "POST" && pathname === "/shiritori") {
     const requestJson = await req.json();
     const nextWord = requestJson.nextWord;
-    
+    let lose = false;
+
+    previousWord = deleteLastMark(previousWord);
 
     if(!HiraganaCheck(nextWord)) {
       return new Response("ひらがなで入力してください", { status: 400 });
     }
 
-    if (
-      nextWord.length > 0 && previousWord.charAt(previousWord.length - 1). !== nextWord.charAt(0) 
-    ) {
+    if (!judgeWord(nextWord, previousWord)) {
       
       return new Response("前の単語に続いていません", { status: 400 });
     }
     
+    previousWord = deleteLastMark(previousWord);
     if(
       nextWord.charAt(nextWord.length - 1) < 12343 || nextWord.charAt(nextWord.length - 1) > 12438 
     ){
@@ -52,21 +53,21 @@ serve(async (req) => {
     }
 
     words.push(nextWord);
+    deleteLastMark(nextWord);
     await cpu(nextWord,words).then((cpu_word) => {
       words.push(cpu_word);
-      console.log(cpu_word);
-      if ( cpu_word.charAt(cpu_word.length - 1) === 'ん' || cpu_word == null) {
+      if (cpu_word.charAt(cpu_word.length - 1) === 'ん' || cpu_word == "") {
         reset();
-        return new Response(JSON.stringify(words), { status: 240 });
+        lose = true;
+        //return返ってくれないので強引に返すんですけど，原因究明しないといけない
       }
       previousWord = cpu_word;
-      console.log(words);
     }).catch((e) => {
       console.error(e);
       return new Response("処理に異常が発生したのでスタートに戻ります", { status: 400 })
     });
-
-    return new Response(JSON.stringify(words));
+    if(lose)return new Response(JSON.stringify(words), { status: 240 });
+    else return new Response(JSON.stringify(words));
   }
 
   return serveDir(req, {
@@ -84,6 +85,12 @@ function randomStart() : string{
   return previousWord;
 }
 
+function deleteLastMark(word : string) : string { //末尾がーのときはそれを除外して判定
+  while(word.charCodeAt(previousWord.length - 1) === 12540){
+    word.slice(0,-1);
+  }
+  return word;
+}
 
 function reset() : void {
   words.splice(0);

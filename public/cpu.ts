@@ -1,37 +1,29 @@
 import { readLines } from './dev_deps.ts';
-import { HiraganaCheck, lastCharacterCheck} from "./error_check.ts";
+import { HiraganaCheck, judgeWord } from "./word_check.ts";
+  //ユーザと違って開始に濁点とかを選ぶのができないので，負けやすい
+  //伸ばし棒とか濁点とかでつなげられるとほぼ負ける
 
-// ファイルオープン
-export async function cpu(previousWord : string, words : Array<string>){
-
+export async function cpu(previousWord:string, words : Array<string>){
+  //previousWordは伸ばし棒除外済み，wordsは表示そのまま．
+  //previousWord->前文字判定用，wordsは重複確認用．
     const file = await Deno.open("./public/words.csv", {read: true});
-    let nextword = words[words.length - 1];
-
+    let nextWord = "";
     //被り制限
-    while(words.includes(nextword) && HiraganaCheck(nextword)){
-      let count = 0;
-    for await (let line of readLines(file, {encoding: 'shift-JIS'})) {
-          
-          if(line[0] == previousWord[previousWord.length - 1]){
-            const words_list = line.split(",");
-            console.log(words_list);
-            words_list.filter(item => !item.match(""));
-            console.log(words_list.length);
-            //ランダム選択
-            let word_select = Math.floor(Math.random() * words.length);
-
-            nextword = words_list[word_select];
-            console.log(nextword.charCodeAt(0));
-            break;
-          }
-      }
+    TimeRanges : for await (let line of readLines(file, {encoding: 'shift-JIS'})) {
+      if(judgeWord(line, previousWord)) {
+        //配列成形
+        const words_list = line.split(",");
+        words_list.filter(item => !item.match(""));
+        do{
+          //ランダム選択
+          let word_select = Math.floor(Math.random() * words.length);
+          nextWord = words_list[word_select];
+          break TimeRanges;
+        }while(words.includes(nextWord) && HiraganaCheck(nextWord))
+      } 
     }
     // ファイルを閉じる
     Deno.close(file.rid);
 
-    //最後がのばし棒のとき->最終文字を削除
-    if(!lastCharacterCheck(nextword)){
-      nextword.slice( 0, -1 ) ;
-    }
-    return nextword;
+    return nextWord;
 }
